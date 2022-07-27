@@ -16,8 +16,10 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-const SMARTY_PATH = '/classes/Smarty/';
-const SMARTY_FILE = 'SmartyCacheResourceMysql.php';
+define('_SMARTY_PATH_16_', '/classes/');
+define('_SMARTY_PATH_17_', '/classes/Smarty/');
+define('_SMARTY_FILE_', 'SmartyCacheResourceMysql.php');
+define('_MATCH_TEXT_', '$this->phpEncryption = new PhpEncryption(');
 
 class Lblfixer_cve_2022_31181 extends Module
 {
@@ -28,10 +30,9 @@ class Lblfixer_cve_2022_31181 extends Module
         $this->version = '1.0.0';
         $this->author = 'LabelGrup Networks SL, Manel Alonso';
         $this->need_instance = 0;
-        $this->displayName = $this->l('LabelGrup.com FIX CVE-2022-31181 (for PrestaShop 1.7.X)');
+        $this->displayName = $this->l('LabelGrup.com FIX CVE-2022-31181 (for PrestaShop 1.6.1.X / 1.7.X)');
         $this->description = $this->l('Fixes CVE-2022-31181 vulnerability.');
-        // PS17 Patch, not valid for 1.6 (WIP)
-        $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.6.1', 'max' => _PS_VERSION_);
         $this->confirmUninstall = $this->l('Your shop will be vulnerable to CVE-2022-31181.') .
             $this->l('Are you sure you want to uninstall this addon?');
 
@@ -51,24 +52,28 @@ class Lblfixer_cve_2022_31181 extends Module
     }
 
     /**
+     * Get the path to the file to patch
+     * @return string
+     */
+    private function getFilePath() {
+        $path = _PS_ROOT_DIR_ . _SMARTY_PATH_17_ . _SMARTY_FILE_;
+        if (version_compare(_PS_VERSION_, '1.7', '<')) {
+            $path = _PS_ROOT_DIR_ . _SMARTY_PATH_16_ . _SMARTY_FILE_;
+        }
+        return $path;
+    }
+
+    /**
      * Apply patch for CVE-2022-31181
      * @return bool
      */
     private function patchCVE()
     {
-        $match_text = '';
-
-        if (version_compare(_PS_VERSION_, '1.7', '>=')) {
-            $match_text = '$this->phpEncryption->encrypt($content)';
-        } else {
-            $match_text = '';
-        }
-
-        if ($this->detectAlreadyPatched($match_text)) {
+        if ($this->detectAlreadyPatched()) {
             return true;
-        }
+        }       
 
-        return $this->patchFile(_PS_ROOT_DIR_ . SMARTY_PATH . SMARTY_FILE, $match_text);
+        return $this->patchFile($this->getFilePath());
     }
 
     /**
@@ -77,70 +82,103 @@ class Lblfixer_cve_2022_31181 extends Module
      */
     private function unpatchCVE()
     {
-        $match_text = '';
-
-        if (version_compare(_PS_VERSION_, '1.7', '>=')) {
-            $match_text = '$this->phpEncryption->encrypt($content)';
-        } else {
-            $match_text = '';
-        }
-
-        if (!$this->detectAlreadyPatched($match_text)) {
+        if (!$this->detectAlreadyPatched()) {
             return true;
         }
 
-        return $this->unpatchFile(_PS_ROOT_DIR_ . SMARTY_PATH . SMARTY_FILE, $match_text);
+        return $this->unpatchFile($this->getFilePath());
     }
 
     /**
      * Detect if the patch is already applied. Version 1.7.X
-     * @param string $match_text Text to find in the file.
+     * @return bool
      */
-    private function detectAlreadyPatched($match_text)
+    private function detectAlreadyPatched()
     {
-        if (file_exists(_PS_ROOT_DIR_ . SMARTY_PATH . SMARTY_FILE)) {
-            $content = Tools::file_get_contents(_PS_ROOT_DIR_ . SMARTY_PATH . SMARTY_FILE);
-            if (strpos($content, $match_text) !== false) {
+        $path = $this->getFilePath();
+
+        if (file_exists($path)) {
+            $content = Tools::file_get_contents($path);
+            if (strpos($content, _MATCH_TEXT_) !== false) {
                 return true;
             }
         }
+        return false;
     }
 
     /**
      * Create a backup and replace the original file for the patched one
      * @param string $path Path to the file to patch
-     * @param bool $is_ps17 If the patch is for PrestaShop 1.7.X
      * @return bool
      */
-    private function patchFile($path, $is_ps17 = true)
+    private function patchFile($path)
     {
-        $version = $is_ps17 ? '_override17' : '_override16';
-        if (!copy($path, dirname(__FILE__) . '/backup/' . SMARTY_FILE)) {
+        if (!@copy($path, dirname(__FILE__) . '/backup/' . _SMARTY_FILE_)) {
             return false;
         }
 
-        if (!copy(dirname(__FILE__) . '/' . $version . '/classes/Smarty/' . SMARTY_FILE, $path)) {
-            return false;
+        if (version_compare(_PS_VERSION_, '1.7', '<')) {
+            $this->copyFolderAndFilesRecursively(
+                dirname(__FILE__) . '/_override16/classes/', 
+                _PS_ROOT_DIR_ . _SMARTY_PATH_16_
+            );
+        } else {
+            if (!@copy(dirname(__FILE__) . '/_override17/classes/Smarty/' . _SMARTY_FILE_, $path)) {
+                return false;
+            }
         }
+        return true;
     }
 
     /**
      * Restore the original file
      * @param string $path Path to the file to patch
-     * @param bool $is_ps17 If the patch is for PrestaShop 1.7.X
      * @return bool
      */
-    private function unpatchFile($path, $is_ps17 = true)
+    private function unpatchFile($path)
     {
-        $version = $is_ps17 ? '_override17' : '_override16';
-        if (!copy(dirname(__FILE__) . '/backup/' . SMARTY_FILE, $path)) {
+        if (!@copy(dirname(__FILE__) . '/backup/' . _SMARTY_FILE_, $path)) {
             return false;
         }
 
-        if (unlink(dirname(__FILE__) . '/' . $version . '/classes/Smarty/' . SMARTY_FILE)) {
+        if (version_compare(_PS_VERSION_, '1.7', '<')) {
+            // Recursive delete for vendor folder on PS16
+        }
+
+        if (@unlink(dirname(__FILE__) . '/backup/' . _SMARTY_FILE_)) {
             return true;
         }
 
         return false;
     }
+
+    /**
+     * Copies a folder recursively
+     * @param string $source Source folder
+     * @param string $dest Destination folder
+     * @return void
+     */
+    private function copyFolderAndFilesRecursively($source, $destination)
+    {
+        if (is_dir($source)) {
+            @mkdir($destination);
+            $directory = dir($source);
+            while (false !== ($readdirectory = $directory->read())) {
+                if ($readdirectory === '.' || $readdirectory === '..') {
+                    continue;
+                }
+                $path = $source . '/' . $readdirectory;
+                if (is_dir($path)) {
+                    $this->copyFolderAndFilesRecursively($path, $destination . '/' . $readdirectory);
+                    continue;
+                }
+                @copy($path, $destination . '/' . $readdirectory);
+            }
+            $directory->close();
+        } else {
+            @copy($source, $destination);
+        }
+    }
 }
+
+?>

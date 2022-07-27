@@ -1,0 +1,8 @@
+{
+    "require": {
+        "defuse/php-encryption": "^2.3"
+    },
+    "autoload": {
+        "classmap": ["src/"]
+    }
+}
