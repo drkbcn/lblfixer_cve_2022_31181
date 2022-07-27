@@ -27,7 +27,7 @@ class Lblfixer_cve_2022_31181 extends Module
     {
         $this->name = 'lblfixer_cve_2022_31181';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->author = 'LabelGrup Networks SL, Manel Alonso';
         $this->need_instance = 0;
         $this->displayName = $this->l('LabelGrup.com FIX CVE-2022-31181 (for PrestaShop 1.6.1.X / 1.7.X)');
