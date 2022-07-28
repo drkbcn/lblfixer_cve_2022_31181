@@ -2,10 +2,11 @@
 
 ![LabelGrup Logo](logo.png)
 
-Module for PrestaShop 1.6.1.X and 1.7.X to fix CVE-2022-31181 vulnerability (Chain SQL Injection)
+Module for PrestaShop 1.6.1.X and 1.7.X to fix CVE-2022-36408 / CVE-2022-31181 vulnerability (Chain SQL Injection)
 
 For further information, check the following links: 
-- CVE: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-31181
+- CVE: https://nvd.nist.gov/vuln/detail/CVE-2022-36408
+- CVE (GitHub): https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-31181
 - GitHub: https://github.com/PrestaShop/PrestaShop/security/advisories/GHSA-hrgx-p36p-89q4
 - PrestaShop: https://build.prestashop.com/news/major-security-vulnerability-on-prestashop-websites/
 
