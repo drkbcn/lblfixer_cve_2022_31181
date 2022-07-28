@@ -21,19 +21,19 @@ define('_SMARTY_PATH_17_', '/classes/Smarty/');
 define('_SMARTY_FILE_', 'SmartyCacheResourceMysql.php');
 define('_MATCH_TEXT_', '$this->phpEncryption = new PhpEncryption(');
 
-class Lblfixer_cve_2022_31181 extends Module
+class Lblfixer_cve_2022_36408 extends Module
 {
     public function __construct()
     {
-        $this->name = 'lblfixer_cve_2022_31181';
+        $this->name = 'lblfixer_cve_2022_36408';
         $this->tab = 'front_office_features';
-        $this->version = '1.1.0';
+        $this->version = '1.1.1';
         $this->author = 'LabelGrup Networks SL, Manel Alonso';
         $this->need_instance = 0;
-        $this->displayName = $this->l('LabelGrup.com FIX CVE-2022-31181 (for PrestaShop 1.6.1.X / 1.7.X)');
-        $this->description = $this->l('Fixes CVE-2022-31181 vulnerability.');
+        $this->displayName = $this->l('LabelGrup.com FIX CVE-2022-36408 (for PrestaShop 1.6.1.X / 1.7.X)');
+        $this->description = $this->l('Fixes CVE-2022-36408 vulnerability.');
         $this->ps_versions_compliancy = array('min' => '1.6.1', 'max' => _PS_VERSION_);
-        $this->confirmUninstall = $this->l('Your shop will be vulnerable to CVE-2022-31181.') .
+        $this->confirmUninstall = $this->l('Your shop will be vulnerable to CVE-2022-36408.') .
             $this->l('Are you sure you want to uninstall this addon?');
 
         parent::__construct();
@@ -64,7 +64,7 @@ class Lblfixer_cve_2022_31181 extends Module
     }
 
     /**
-     * Apply patch for CVE-2022-31181
+     * Apply patch for CVE-2022-36408
      * @return bool
      */
     private function patchCVE()
@@ -77,7 +77,7 @@ class Lblfixer_cve_2022_31181 extends Module
     }
 
     /**
-     * Remove patch for CVE-2022-31181
+     * Remove patch for CVE-2022-36408
      * @return bool
      */
     private function unpatchCVE()
